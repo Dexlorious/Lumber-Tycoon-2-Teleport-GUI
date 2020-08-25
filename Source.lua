@@ -78,7 +78,7 @@ local ui = Scan(Data,game.CoreGui)
 local m = game.Players.LocalPlayer:GetMouse()
 local toggle = false
 local down = false
-local last
+local TPDB = false
 
 function hook(a,b)
 	a.MouseButton1Click:Connect(function()
@@ -87,22 +87,23 @@ function hook(a,b)
 end
 
 function Teleport(CF)
-	last = game.HttpService:GenerateGUID(false)
-	local backup = tostring(last)
+	if TPDB then
+		game.StarterGui:SetCore('SendNotification',{Title='Error',Text="TP Already In Progress",Duration=2})
+		return
+	end
+	TPDB = true
 	local char = game.Players.LocalPlayer.Character
 	local root = char.HumanoidRootPart
 	char.Humanoid:SetStateEnabled("FallingDown", false)
 	local GotoPos = (CF-CF.p) + game.Players.LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 4, 0)
 	local Difference = CF.p-game.Players.LocalPlayer.Character.HumanoidRootPart.Position
-	for dc = 0, Difference.Magnitude,100 do
-		if last ~= backup then
-			break
-		end
+	for dc = 0, Difference.Magnitude,50 do
 		game.ReplicatedStorage.TestPing:InvokeServer()
 		char.HumanoidRootPart.CFrame = GotoPos + Difference.Unit * dc
 		root.Velocity, root.RotVelocity = Vector3.new(),Vector3.new()
 	end
 	root.CFrame = CF
+	TPDB = false
 end
 
 spawn(function()
